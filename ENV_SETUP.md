@@ -27,8 +27,7 @@ Open `.env` in a text editor and add your actual values:
 MYTRAVALY_API_BASE_URL=https://api.mytravaly.com/public/v1/
 MYTRAVALY_AUTH_TOKEN=your_actual_auth_token_here
 
-# Visitor Token (Optional - Leave empty if not needed)
-MYTRAVALY_VISITOR_TOKEN=
+MYTRAVALY_VISITOR_TOKEN=your_actual_visitor_token_here
 
 # App Configuration
 APP_NAME=MyTravaly
@@ -41,7 +40,7 @@ APP_BRAND_COLOR=FFFF6F61
 
 ```env
 MYTRAVALY_API_BASE_URL=https://api.mytravaly.com/public/v1/
-MYTRAVALY_AUTH_TOKEN=71523fdd8d26f585315b4233e39d9263
+MYTRAVALY_AUTH_TOKEN=83710fdd8d34f123456b4233e39d1234
 ```
 
 ## Firebase Configuration
