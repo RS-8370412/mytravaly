@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'screens/auth_page.dart';
 import 'screens/splash_screen.dart';
 import 'screens/home_page.dart';
@@ -9,6 +10,15 @@ import 'screens/search_results_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Load environment variables from .env file
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (e) {
+    // If .env file doesn't exist, use default values
+    debugPrint('Warning: .env file not found, using defaults: $e');
+  }
+  
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }

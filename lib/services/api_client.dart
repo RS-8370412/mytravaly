@@ -6,13 +6,16 @@ class ApiClient {
   final http.Client _httpClient;
   ApiClient({http.Client? httpClient}) : _httpClient = httpClient ?? http.Client();
 
-  Map<String, String> _headers() => {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        // MyTravaly headers
-        'authtoken': AppConfig.apiToken,
-        if (AppConfig.visitorToken.isNotEmpty) 'visitortoken': AppConfig.visitorToken,
-      };
+  Future<Map<String, String>> _headers() async {
+    final visitorToken = await AppConfig.getVisitorToken();
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      // MyTravaly headers
+      'authtoken': AppConfig.apiToken,
+      if (visitorToken.isNotEmpty) 'visitortoken': visitorToken,
+    };
+  }
 
   Uri _buildUri(String path, [Map<String, dynamic>? queryParameters]) {
     final String base = AppConfig.apiBaseUrl.endsWith('/')
@@ -25,7 +28,8 @@ class ApiClient {
 
   Future<dynamic> get(String path, {Map<String, dynamic>? query}) async {
     final uri = _buildUri(path, query);
-    final res = await _httpClient.get(uri, headers: _headers());
+    final headers = await _headers();
+    final res = await _httpClient.get(uri, headers: headers);
     if (res.statusCode >= 200 && res.statusCode < 300) {
       return jsonDecode(res.body);
     }
@@ -34,7 +38,8 @@ class ApiClient {
 
   Future<dynamic> post(String path, {required Map<String, dynamic> body}) async {
     final uri = _buildUri(path);
-    final res = await _httpClient.post(uri, headers: _headers(), body: jsonEncode(body));
+    final headers = await _headers();
+    final res = await _httpClient.post(uri, headers: headers, body: jsonEncode(body));
     if (res.statusCode >= 200 && res.statusCode < 300) {
       return jsonDecode(res.body);
     }

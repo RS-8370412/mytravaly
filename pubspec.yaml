@@ -39,6 +39,8 @@ dependencies:
   firebase_core: ^2.31.0
   firebase_auth: ^4.17.4
   google_sign_in: ^6.2.1
+  shared_preferences: ^2.2.3
+  flutter_dotenv: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -68,6 +70,7 @@ flutter:
     - assets/logo.png
     - assets/signin_signup_logo.png
     - assets/google-logo-icon.png
+    - .env
 
 # App icon configuration
 flutter_launcher_icons:
