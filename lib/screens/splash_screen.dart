@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../services/device_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -10,15 +11,11 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  final DeviceService _deviceService = DeviceService();
   @override
   void initState() {
     super.initState();
-    // Show splash briefly, then go to auth gate ('/')
-    Timer(const Duration(milliseconds: 3000), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/');
-      }
-    });
+    _bootstrap();
   }
 
   @override
@@ -42,6 +39,21 @@ class _SplashScreenState extends State<SplashScreen> {
       ),
     ),
     );
+  }
+
+  Future<void> _bootstrap() async {
+    // Perform device registration while splash is visible; ignore failures
+    try {
+      // Give the splash at least ~1.2s for a nicer feel
+      await Future.wait([
+        _deviceService.registerDevice().catchError((_) {}),
+        Future.delayed(const Duration(milliseconds: 3000)),
+      ]);
+    } finally {
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/');
+      }
+    }
   }
 }
 

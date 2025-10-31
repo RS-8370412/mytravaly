@@ -6,15 +6,17 @@ class ApiClient {
   final http.Client _httpClient;
   ApiClient({http.Client? httpClient}) : _httpClient = httpClient ?? http.Client();
 
-  Future<Map<String, String>> _headers() async {
-    final visitorToken = await AppConfig.getVisitorToken();
-    return {
+  Future<Map<String, String>> _headers({bool includeVisitorToken = true}) async {
+    final visitorToken = includeVisitorToken ? await AppConfig.getVisitorToken() : '';
+    final headers = <String, String>{
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      // MyTravaly headers
       'authtoken': AppConfig.apiToken,
-      if (visitorToken.isNotEmpty) 'visitortoken': visitorToken,
     };
+    if (includeVisitorToken && visitorToken.isNotEmpty) {
+      headers['visitortoken'] = visitorToken;
+    }
+    return headers;
   }
 
   Uri _buildUri(String path, [Map<String, dynamic>? queryParameters]) {
@@ -26,9 +28,9 @@ class ApiClient {
     );
   }
 
-  Future<dynamic> get(String path, {Map<String, dynamic>? query}) async {
+  Future<dynamic> get(String path, {Map<String, dynamic>? query, bool includeVisitorToken = true}) async {
     final uri = _buildUri(path, query);
-    final headers = await _headers();
+    final headers = await _headers(includeVisitorToken: includeVisitorToken);
     final res = await _httpClient.get(uri, headers: headers);
     if (res.statusCode >= 200 && res.statusCode < 300) {
       return jsonDecode(res.body);
@@ -36,9 +38,9 @@ class ApiClient {
     throw HttpException('GET $uri failed: ${res.statusCode} ${res.body}');
   }
 
-  Future<dynamic> post(String path, {required Map<String, dynamic> body}) async {
+  Future<dynamic> post(String path, {required Map<String, dynamic> body, bool includeVisitorToken = true}) async {
     final uri = _buildUri(path);
-    final headers = await _headers();
+    final headers = await _headers(includeVisitorToken: includeVisitorToken);
     final res = await _httpClient.post(uri, headers: headers, body: jsonEncode(body));
     if (res.statusCode >= 200 && res.statusCode < 300) {
       return jsonDecode(res.body);
