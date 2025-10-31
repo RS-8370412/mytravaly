@@ -7,8 +7,8 @@ class AppConfig {
   // Get API base URL from .env
   static String get apiBaseUrl => dotenv.env['MYTRAVALY_API_BASE_URL'] ?? 'https://api.mytravaly.com/public/v1/';
   
-  // Get auth token from .env
-  static String get apiToken => dotenv.env['MYTRAVALY_AUTH_TOKEN'] ?? '';
+  // Get auth token from .env (fallback to provided value if missing for development)
+  static String get apiToken => dotenv.env['MYTRAVALY_AUTH_TOKEN'] ?? '71523fdd8d26f585315b4233e39d9263';
   
   // Get visitor token from .env (fallback to SharedPreferences)
   static Future<String> getVisitorToken() async {

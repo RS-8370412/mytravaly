@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:convert';
 import '../services/api_client.dart';
 import '../models/hotel_model.dart';
 
@@ -25,19 +26,19 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
   }
 
   Future<Map<String, dynamic>> _fetch() async {
-    // API expects POST to base with action and payload in body
+    // Use the exact hardcoded body as requested (no input changes)
     final Map<String, dynamic> body = {
       'action': 'getSearchResultListOfHotels',
       'getSearchResultListOfHotels': {
         'searchCriteria': {
           'checkIn': '2026-07-11',
           'checkOut': '2026-07-12',
-          'rooms': 1,
+          'rooms': 2,
           'adults': 2,
           'children': 0,
           'searchType': 'hotelIdSearch',
-          'searchQuery': [_query],
-          'accommodation': ['all'],
+          'searchQuery': ['qyhZqzVt'],
+          'accommodation': ['all', 'hotel'],
           'arrayOfExcludedSearchType': ['street'],
           'highPrice': '3000000',
           'lowPrice': '0',
@@ -132,55 +133,34 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                         ),
                       );
                     }
-                    final data = snapshot.data;
-                    if (data == null || !data['status']) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.hotel, size: 64, color: Colors.grey.shade300),
-                              const SizedBox(height: 16),
-                              Text(
-                                data?['message'] ?? 'No results found',
-                                style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
-                              ),
-                            ],
-                          ),
-                        ),
+                    final data = snapshot.data ?? <String, dynamic>{};
+                    final bool ok = data['status'] == true;
+                    final hotelsData = ok ? (data['data']?['arrayOfHotelList'] as List<dynamic>?) : null;
+                    if (ok && hotelsData != null && hotelsData.isNotEmpty) {
+                      final hotels = hotelsData
+                          .whereType<Map<String, dynamic>>()
+                          .map((e) => Hotel.fromJson(e))
+                          .toList();
+                      return ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: hotels.length,
+                        itemBuilder: (context, index) {
+                          final hotel = hotels[index];
+                          return _HotelCard(hotel: hotel, brandColor: _brandColor);
+                        },
                       );
                     }
 
-                    final hotelsData = data['data']?['arrayOfHotelList'] as List<dynamic>?;
-                    if (hotelsData == null || hotelsData.isEmpty) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.search_off, size: 64, color: Colors.grey.shade300),
-                              const SizedBox(height: 16),
-                              Text(
-                                'No hotels found',
-                                style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }
-
-                    final hotels = hotelsData.map((e) => Hotel.fromJson(e as Map<String, dynamic>)).toList();
-
-                    return ListView.builder(
+                    // Fallback: show raw JSON pretty-printed
+                    final String pretty = const JsonEncoder.withIndent('  ').convert(data);
+                    return Padding(
                       padding: const EdgeInsets.all(16),
-                      itemCount: hotels.length,
-                      itemBuilder: (context, index) {
-                        final hotel = hotels[index];
-                        return _HotelCard(hotel: hotel, brandColor: _brandColor);
-                      },
+                      child: SingleChildScrollView(
+                        child: SelectableText(
+                          pretty,
+                          style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+                        ),
+                      ),
                     );
                   },
                 ),

@@ -19,8 +19,9 @@ class SearchService {
 
     // This call REQUIRES visitor token; default headers include it
     try {
-      return await _apiClient.post('', body: body, includeVisitorToken: true);
-      print('res: $res');
+      final res = await _apiClient.post('', body: body, includeVisitorToken: true);
+      print('getSearchResultListOfHotels response: $res');
+      // return res;
     } catch (e) {
       final String err = e.toString();
       final bool invalidVisitorToken = err.contains('Invalid visitor token');
@@ -56,11 +57,7 @@ class SearchService {
           out[key] = (value as List).map((e) => '$e').toList();
           break;
         default:
-          if (value is num || value is bool) {
-            out[key] = '$value';
-          } else {
-            out[key] = value;
-          }
+          out[key] = value;
       }
     });
     return out;

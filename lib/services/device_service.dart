@@ -23,10 +23,12 @@ class DeviceService {
     };
 
     final dynamic res = await _apiClient.post('', body: body, includeVisitorToken: false);
-    print('res: $res');
+    print('deviceRegister response: $res');
     try {
-      if (res.status == true) {
-        final data = res['data'] as Map?;
+      final Map<String, dynamic> map = (res is Map<String, dynamic>) ? res : <String, dynamic>{};
+      final bool ok = map['status'] == true;
+      if (ok) {
+        final data = map['data'] as Map<String, dynamic>?;
         final token = data != null ? (data['visitorToken'] as String? ?? '') : '';
         if (token.isNotEmpty) {
           await AppConfig.setVisitorToken(token);
