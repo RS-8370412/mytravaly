@@ -15,6 +15,9 @@ class ApiClient {
     };
     if (includeVisitorToken && visitorToken.isNotEmpty) {
       headers['visitortoken'] = visitorToken;
+      print('🔑 Using visitor token: $visitorToken');
+    } else if (includeVisitorToken) {
+      print('⚠️  Warning: Visitor token is empty!');
     }
     return headers;
   }
@@ -31,7 +34,12 @@ class ApiClient {
   Future<dynamic> get(String path, {Map<String, dynamic>? query, bool includeVisitorToken = true}) async {
     final uri = _buildUri(path, query);
     final headers = await _headers(includeVisitorToken: includeVisitorToken);
+    print('📤 GET $uri');
+    print('📋 Headers: ${headers.keys.join(", ")}');
+    
     final res = await _httpClient.get(uri, headers: headers);
+    print('📥 Response ${res.statusCode}: ${res.body.substring(0, res.body.length > 200 ? 200 : res.body.length)}...');
+    
     if (res.statusCode >= 200 && res.statusCode < 300) {
       return jsonDecode(res.body);
     }
@@ -41,7 +49,15 @@ class ApiClient {
   Future<dynamic> post(String path, {required Map<String, dynamic> body, bool includeVisitorToken = true}) async {
     final uri = _buildUri(path);
     final headers = await _headers(includeVisitorToken: includeVisitorToken);
-    final res = await _httpClient.post(uri, headers: headers, body: jsonEncode(body));
+    final bodyJson = jsonEncode(body);
+    
+    print('📤 POST $uri');
+    print('📋 Headers: ${headers.keys.join(", ")}');
+    print('📦 Body: ${bodyJson.substring(0, bodyJson.length > 300 ? 300 : bodyJson.length)}...');
+    
+    final res = await _httpClient.post(uri, headers: headers, body: bodyJson);
+    print('📥 Response ${res.statusCode}: ${res.body.substring(0, res.body.length > 200 ? 200 : res.body.length)}...');
+    
     if (res.statusCode >= 200 && res.statusCode < 300) {
       return jsonDecode(res.body);
     }

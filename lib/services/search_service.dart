@@ -17,21 +17,34 @@ class SearchService {
       }
     };
 
-    // This call REQUIRES visitor token; default headers include it
     try {
       final res = await _apiClient.post('', body: body, includeVisitorToken: true);
-      print('getSearchResultListOfHotels response: $res');
-      // return res;
+      print('✅ Search successful');
+      return res;
     } catch (e) {
       final String err = e.toString();
-      final bool invalidVisitorToken = err.contains('Invalid visitor token');
-      final bool badRequest = err.contains(' 400 ');
-      if (invalidVisitorToken || badRequest) {
+      
+      // Check if it's specifically a visitor token issue (401 or token-related message)
+      final bool invalidVisitorToken = err.contains('Invalid visitor token') || 
+                                       err.contains('visitor token') ||
+                                       err.contains('401');
+      
+      // Don't retry on validation errors (400 with specific validation messages)
+      final bool isValidationError = err.contains('limit is Invalid') ||
+                                     err.contains('checkIn') ||
+                                     err.contains('checkOut') ||
+                                     err.contains('accommodation');
+      
+      if (invalidVisitorToken && !isValidationError) {
         // Attempt to self-heal: clear token, re-register, retry once
+        print('🔄 Invalid token detected, re-registering device...');
         await AppConfig.clearVisitorToken();
         await DeviceService().registerDevice();
         return await _apiClient.post('', body: body, includeVisitorToken: true);
       }
+      
+      // For validation errors or other errors, just throw them
+      print('❌ Search error: $err');
       rethrow;
     }
   }
@@ -63,5 +76,3 @@ class SearchService {
     return out;
   }
 }
-
-
